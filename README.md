@@ -1,6 +1,6 @@
 # Zero-Trust PII Proxy Agent
 
-A privacy-preserving proxy that sits between your application and your LLM. Sanitizes input, processes only clean text, and unmasks the response — so your LLM never sees real PII.
+A privacy-preserving proxy that sits between your application and your LLM. Sanitizes input, processes only clean text, and unmasks the response — so your LLM never sees real PII. 
 
 ## Why This Exists
 
