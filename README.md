@@ -1,51 +1,63 @@
 # Zero-Trust PII Proxy Agent
 
-A small Next.js demo that sends text through a **PII proxy**: a fast LLM sanitizes input (replaces PII with placeholders), a heavy LLM processes only the sanitized text, and the response is unmasked before returning. All state is in-memory for the request; no database.
+A privacy-preserving proxy that sits between your application and your LLM. Sanitizes input, processes only clean text, and unmasks the response — so your LLM never sees real PII.
 
-## Features
+## Why This Exists
 
-- Input text area and "Run proxy" button
-- Proxy log (steps: sanitize, send to heavy model, unmask)
-- Output (unmasked) from the heavy model
+Enterprise AI adoption stalls on compliance. Legal and security teams won't approve LLM integrations if sensitive data flows to third-party models. The usual answer is "just don't send PII" — but that cripples the AI's usefulness. This proxy solves the problem architecturally: a fast LLM identifies and replaces PII with placeholders, the heavy LLM processes only sanitized text, and the proxy unmasks the response before returning it to the user. The heavy model never sees real data. Compliance is preserved. AI capability is preserved.
 
-## Setup
+I built this after repeatedly hitting the same blocker while shipping AI features in regulated enterprise environments — healthcare and financial services teams that wanted AI but couldn't get past data governance review.
 
-1. Clone and install:
+## How It Works
 
-   ```bash
-   cd Zero-Trust-PII-Proxy-Agent
-   npm install
-   ```
+```
+User Input → [Fast LLM: Detect & Replace PII] → Sanitized Text → [Heavy LLM: Process] → Sanitized Response → [Unmask PII] → Clean Output
+```
 
-2. Copy `.env.example` to `.env.local` and set your OpenAI API key:
+1. **Sanitize** — A fast model (gpt-4o-mini) scans input, identifies PII, and replaces it with deterministic placeholders
+2. **Process** — The heavy model (gpt-4o) receives only sanitized text and generates a response
+3. **Unmask** — Placeholders in the response are mapped back to original values
 
-   ```bash
-   cp .env.example .env.local
-   # Edit .env.local: OPENAI_API_KEY=sk-...
-   ```
+The proxy log shows every step transparently so you can audit the pipeline.
 
-3. Run the dev server:
+## Key Features
 
-   ```bash
-   npm run dev
-   ```
+- **Zero-trust architecture** — the processing LLM never sees real PII
+- **Transparent proxy logging** — see sanitization, processing, and unmasking steps
+- **Deterministic placeholder mapping** — consistent replacement and restoration
+- **Configurable models** — swap the fast and heavy models via environment variables
+- **Audit-ready** — full pipeline visibility for compliance review
 
-4. Open [http://localhost:3000](http://localhost:3000), paste text with PII, and click "Run proxy".
+## Getting Started
 
-## Deploy (e.g. Vercel)
+```bash
+git clone https://github.com/gautamgb/Zero-Trust-PII-Proxy-Agent.git
+cd Zero-Trust-PII-Proxy-Agent
+npm install
+cp .env.example .env.local  # Add your OPENAI_API_KEY
+npm run dev
+```
 
-- Push to GitHub and import the project in Vercel.
-- Add `OPENAI_API_KEY` in Project Settings → Environment Variables.
-- Optionally set `FAST_MODEL` and `HEAVY_MODEL`.
+Open [http://localhost:3000](http://localhost:3000), enter text containing PII, and click "Run proxy" to see the sanitization pipeline in action.
 
-## Publish as a public repo
+## Deploy to Vercel
 
-1. Create a new **public** repo on GitHub (e.g. `zero-trust-pii-proxy-agent`). Do not add a README or .gitignore.
-2. From this directory: `git remote add origin https://github.com/gautamgb/Zero-Trust-PII-Proxy-Agent.git` then `git push -u origin main`.
-3. Optionally add a description and topics on the repo page.
+1. Push to GitHub and import in Vercel
+2. Set `OPENAI_API_KEY` in environment variables
+3. Optionally configure `FAST_MODEL` and `HEAVY_MODEL`
+4. Deploy
 
-## Tech
+## Tech Stack
 
-- Next.js 16 (App Router)
-- OpenAI API (fast model for sanitize, heavy for main task)
-- Tailwind CSS
+- **Framework:** Next.js 16 (App Router)
+- **AI:** OpenAI API
+- **Styling:** Tailwind CSS
+- **Language:** TypeScript
+
+## Live Demo
+
+[seekgb.com/pii-proxy](https://www.seekgb.com/pii-proxy)
+
+## License
+
+MIT
